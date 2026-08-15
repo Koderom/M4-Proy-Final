@@ -14,6 +14,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Bienvenida al pipeline
+        run: echo "¡Bienvenido al pipeline de CI/CD!"
+
       - name: Mostrar información del entorno
         run: |
           echo "================================"
