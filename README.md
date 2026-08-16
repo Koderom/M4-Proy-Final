@@ -116,10 +116,4 @@ La rama `main` está protegida y requiere:
 - [GitHub Actions Best Practices](https://docs.github.com/en/actions/guides)
 - [CI/CD Concepts](https://www.atlassian.com/continuous-delivery/ci-cd)
 
-## 📧 Contacto
-
-Para preguntas o sugerencias sobre este laboratorio, contacta al instructor del Diplomado.
-
----
-
 **Última actualización**: 2026-08-16
