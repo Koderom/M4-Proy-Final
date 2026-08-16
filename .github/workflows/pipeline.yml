@@ -25,6 +25,9 @@ jobs:
           java-version: '17'
           cache: gradle
 
+      - name: Dar permiso de ejecución a gradlew
+        run: chmod +x gradlew
+
       - name: Bienvenida al pipeline
         run: echo "¡Bienvenido al pipeline de CI/CD!"
 
@@ -47,6 +50,12 @@ jobs:
       - name: Compilar el proyecto
         run: ./gradlew compileJava compileTestJava --no-daemon
 
+      - name: Subir artefacto de compilación
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-classes
+          path: build/classes/java
+
   test:
     name: Pruebas
     needs: build
@@ -63,8 +72,17 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Ejecutar pruebas y generar cobertura
-        run: ./gradlew test jacocoTestReport --no-daemon
+      - name: Dar permiso de ejecución a gradlew
+        run: chmod +x gradlew
+
+      - name: Descargar clases compiladas
+        uses: actions/download-artifact@v4
+        with:
+          name: compiled-classes
+          path: build/classes/java
+
+      - name: Ejecutar pruebas sobre el artefacto de compilación
+        run: ./gradlew test jacocoTestReport --no-daemon -x compileJava -x compileTestJava
 
       - name: Resultado de las pruebas
         run: |
