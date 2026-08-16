@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+      - feature/*
+  pull_request:
+    branches:
+      - main
 
 jobs:
   hello-ci:
@@ -32,6 +36,9 @@ jobs:
 
       - name: Mostrar versión de Git
         run: git --version
+
+      - name: Prueba de error
+        run: exit 1
 
       - name: Finalizar pipeline
         run: echo "Pipeline ejecutado correctamente."
