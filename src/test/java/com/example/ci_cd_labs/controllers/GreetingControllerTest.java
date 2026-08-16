@@ -21,7 +21,7 @@ class GreetingControllerTest {
 	void helloReturnsGreeting() throws Exception {
 		mockMvc.perform(get("/api/hello"))
 			.andExpect(status().isOk())
-			.andExpect(content().string("Hola desde CI/CD Labs"));
+			.andExpect(content().string("TEST ERROR"));
 	}
 
 }
