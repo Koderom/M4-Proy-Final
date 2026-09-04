@@ -6,7 +6,9 @@ plugins {
 }
 
 group = 'com.example'
-version = '0.0.1-SNAPSHOT'
+version = providers.environmentVariable('APP_VERSION')
+		.orElse('0.0.1-SNAPSHOT')
+		.get()
 
 java {
 	toolchain {
@@ -35,4 +37,25 @@ tasks.named('jacocoTestReport') {
 		html.required = true
 		csv.required = false
 	}
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+	dependsOn tasks.named('test')
+	violationRules {
+		rule {
+			limit {
+				counter = 'LINE'
+				value = 'COVEREDRATIO'
+				minimum = 0.70
+			}
+		}
+	}
+}
+
+tasks.named('check') {
+	dependsOn tasks.named('jacocoTestCoverageVerification')
+}
+
+tasks.named('jar') {
+	enabled = false
 }

@@ -1,4 +1,4 @@
-package com.example.ci_cd_labs;
+package com.example.m4_proy_final;
 
 public class Calculator {
     public int add(int a, int b) {
