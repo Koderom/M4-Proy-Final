@@ -26,4 +26,8 @@ public class GreetingController {
 		return Map.of("instance",  instance, "port", port);
 	}
 
+	@GetMapping("/version")
+	public String version() {
+		return "m4-proy-final v1.1.0";
+	}
 }
