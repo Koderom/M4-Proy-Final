@@ -1,4 +1,4 @@
-package com.example.ci_cd_labs;
+package com.example.m4_proy_final;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -16,9 +16,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class CiCdLabsApplicationTests {
+class M4ProyFinalApplicationTests {
 	@Autowired
-	private MockMvc MockMvc;
+	private MockMvc mockMvc;
+
 	@Test
 	void contextLoads() {
 	}
@@ -29,25 +30,25 @@ class CiCdLabsApplicationTests {
 
 		try (MockedStatic<SpringApplication> mocked = mockStatic(SpringApplication.class)) {
 
-			CiCdLabsApplication.main(args);
+			M4ProyFinalApplication.main(args);
 
 			mocked.verify(() ->
-					SpringApplication.run(CiCdLabsApplication.class, args)
+					SpringApplication.run(M4ProyFinalApplication.class, args)
 			);
 		}
 	}
 
 	@Test
 	void checkRootResponse() throws Exception {
-		MockMvc.perform(get("/")
+		mockMvc.perform(get("/")
 						.accept(MediaType.TEXT_PLAIN))
 				.andExpect(status().isOk())
-				.andExpect(content().string("Hello CI/CD World!"));
+				.andExpect(content().string("M4 Proy Final is running!"));
 	}
 
 	@Test
 	void checkHealthyResponse() throws Exception {
-		MockMvc.perform(get("/health")
+		mockMvc.perform(get("/health")
 						.accept(MediaType.TEXT_PLAIN))
 				.andExpect(status().isOk())
 				.andExpect(content().string("Server Healthy!"));
@@ -55,10 +56,9 @@ class CiCdLabsApplicationTests {
 
 	@Test
 	void checkDateResponse() throws Exception {
-		MockMvc.perform(get("/date")
+		mockMvc.perform(get("/date")
 						.accept(MediaType.TEXT_PLAIN))
 				.andExpect(status().isOk())
 				.andExpect(content().string("Current Server Date: " + java.time.LocalDate.now()));
-		//.andExpect(content().string("Current Server Date Time : " + java.time.LocalDateTime.now()));
 	}
 }

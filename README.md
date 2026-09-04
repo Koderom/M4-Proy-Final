@@ -1,152 +1,185 @@
-# CI/CD Labs - GitHub Actions Learning Project
+# M4 Proy Final
 
-## Descripción
+Proyecto Spring Boot para demostrar un proceso reproducible de Continuous Integration y publicación de versiones con GitHub Actions. El alcance de este repositorio comprende branching, pruebas, cobertura, empaquetado, versionamiento semántico, artefactos y GitHub Releases. El deployment no forma parte de este alcance.
 
-Este proyecto es un laboratorio de pruebas y conceptos fundamentales de **CI/CD (Continuous Integration/Continuous Delivery)** y **GitHub Actions**. Está diseñado para explorar y practicar los siguientes conceptos clave:
+## Aplicación
 
-## 🌐 La Aplicación
+La aplicación utiliza Java 17, Spring Boot 4.1.0, Gradle, JUnit 5 y JaCoCo. Expone los siguientes endpoints:
 
-Una API REST sencilla con **Spring Boot 4.1.0** y **Java 17** que expone un endpoint de ejemplo (hello world):
+| Método | Ruta | Respuesta esperada |
+|---|---|---|
+| GET | `/` | `M4 Proy Final is running!` |
+| GET | `/api/hello` | `Hola desde M4 Proy Final` |
+| GET | `/health` | `Server Healthy!` |
+| GET | `/date` | Fecha actual del servidor |
 
-| Método | Ruta        | Respuesta                  |
-|--------|-------------|----------------------------|
-| GET    | `/api/hello`| `Hola desde CI/CD Labs`    |
+La aplicación se ejecuta localmente en el puerto `8081`.
 
-## 🎯 Objetivos
+## Estructura
 
-- Entender y configurar pipelines de CI/CD
-- Aprender a utilizar GitHub Actions para automatización
-- Implementar flujos de trabajo (workflows) automatizados
-- Practicar estrategias de branching y versionado
-- Validar código automáticamente en cada push
-- Automatizar pruebas, builds y deployments
-
-## 📚 Temas Cubiertos
-
-- **GitHub Actions Basics**: Workflows, jobs, steps, y actions
-- **Branching Strategy**: Feature branches, main branch protection
-- **Automated Testing**: Ejecutar tests automáticamente
-- **Build Automation**: Compilación y empaquetamiento automático
-- **Deployment Pipelines**: Automatización de despliegues
-- **CI/CD Best Practices**: Convenciones y mejores prácticas
-
-## 🏗️ Estructura del Proyecto
-
-```
-ci-cd-labs/
-├── .github/
-│   └── workflows/          # GitHub Actions workflow files
-├── src/
-│   ├── main/               # Código de la aplicación
-│   │   └── java/com/example/ci_cd_labs/
-│   │       ├── CiCdLabsApplication.java
-│   │       └── controllers/GreetingController.java
-│   └── test/               # Tests automatizados
-│       └── java/com/example/ci_cd_labs/
+```text
+m4-proy-final/
+├── .github/workflows/pipeline.yml
+├── gradle/wrapper/
+├── src/main/java/com/example/m4_proy_final/
+├── src/test/java/com/example/m4_proy_final/
 ├── build.gradle
 ├── settings.gradle
-└── README.md               # Este archivo
+├── CHANGELOG.md
+└── README.md
 ```
 
-## 🚀 Primeros Pasos
+## Construcción y pruebas
 
-1. **Clonar el repositorio**
-   ```bash
-   git clone <repository-url>
-   cd ci-cd-labs
-   ```
+El Gradle Wrapper incluido garantiza que localmente y en CI se utilice la misma versión de Gradle.
 
-2. **Crear una rama de feature**
-   ```bash
-   git checkout -b feature/nombre-de-feature
-   ```
+| Objetivo | Windows | Linux/macOS |
+|---|---|---|
+| Compilar, probar, verificar cobertura y empaquetar | `.\gradlew.bat clean build` | `./gradlew clean build` |
+| Ejecutar pruebas | `.\gradlew.bat test` | `./gradlew test` |
+| Generar reporte JaCoCo | `.\gradlew.bat jacocoTestReport` | `./gradlew jacocoTestReport` |
+| Ejecutar la aplicación | `.\gradlew.bat bootRun` | `./gradlew bootRun` |
 
-3. **Hacer cambios y commitear**
-   ```bash
-   git add .
-   git commit -m "Add: descripción de cambios"
-   ```
+Después de iniciar la aplicación se puede verificar con:
 
-4. **Push a la rama**
-   ```bash
-   git push -u origin feature/nombre-de-feature
-   ```
-
-5. **Crear Pull Request**
-   - Los workflows se ejecutarán automáticamente
-   - Revisa que pasen todas las validaciones
-
-## 🛠️ Build y Tests
-
-Usa el wrapper de Gradle incluido. En Windows el comando es `.\gradlew.bat` (en Linux/macOS, `./gradlew`).
-
-| Comando                         | Descripción                                                  |
-|---------------------------------|--------------------------------------------------------------|
-| `.\gradlew.bat test`            | Compila y ejecuta todas las pruebas (JUnit 5)                |
-| `.\gradlew.bat build`           | Compila, ejecuta pruebas y genera el jar (incluye `test`)    |
-| `.\gradlew.bat build -x test`   | Solo compila, sin ejecutar pruebas                           |
-| `.\gradlew.bat test --tests com.example.ci_cd_labs.controllers.GreetingControllerTest` | Ejecuta una sola prueba |
-
-Para correr la aplicación:
-
-```
-.\gradlew.bat bootRun
+```bash
+curl http://localhost:8081/health
 ```
 
-Y abrir <http://localhost:8080/api/hello>.
+Los resultados locales se generan en:
 
-> **Nota (entorno local):** el puerto 8080 suele estar ocupado por XAMPP/Apache en esta máquina. Si ocurre, usa `.\gradlew.bat bootRun --args='--server.port=8090'` o detén Apache.
-
-## 🔄 GitHub Actions Workflows
-
-### Workflows Disponibles
-
-- **pipeline.yml**: Se ejecuta en cada push a `main`/`feature/*` y en PRs hacia `main`. Por ahora solo muestra pasos de ejemplo (echo); no compila ni ejecuta pruebas.
-
-## ✅ Validaciones Automáticas
-
-Cada commit y pull request se somete a:
-
-- ✔️ Análisis estático del código
-- ✔️ Ejecución de pruebas unitarias
-- ✔️ Validación de estándares de código
-- ✔️ Verificación de cambios en documentación
-
-## 📝 Convenciones de Commit
-
-Para mantener un historial limpio:
-
+```text
+build/reports/tests/test/index.html
+build/reports/jacoco/test/html/index.html
+build/reports/jacoco/test/jacocoTestReport.xml
+build/libs/m4-proy-final-<version>.jar
 ```
+
+El build falla si una prueba falla o si la cobertura de líneas es inferior al 70%.
+
+Resultado de la validación local del 4 de septiembre de 2026:
+
+- 12 pruebas ejecutadas, sin fallos ni pruebas omitidas.
+- 100% de cobertura de clases, métodos, líneas y ramas.
+- JAR ejecutable `m4-proy-final-1.0.0.jar` validado con la versión `1.0.0` en su manifiesto.
+- Endpoints `/`, `/api/hello` y `/health` verificados con HTTP 200.
+
+### Equivalencia con Maven
+
+Este proyecto utiliza Gradle con autorización del docente. Las responsabilidades son equivalentes:
+
+| Maven | Gradle utilizado |
+|---|---|
+| `pom.xml` | `build.gradle` |
+| `mvn clean verify` | `./gradlew clean build` |
+| `target/*.jar` | `build/libs/*.jar` |
+
+No se requiere `pom.xml`, `mvn` ni un workflow llamado `maven.yml`.
+
+## Estrategia de branching
+
+| Rama | Propósito |
+|---|---|
+| `main` | Código estable, integrado y listo para versionar. |
+| `feature/<descripcion>` | Desarrollo aislado de una funcionalidad o cambio. |
+
+Reglas de trabajo:
+
+1. Crear cada `feature/*` desde la versión actual de `main`.
+2. No realizar cambios directamente en `main`.
+3. Publicar la rama y abrir un Pull Request hacia `main`.
+4. Corregir cualquier fallo detectado por el check obligatorio `build-and-test`.
+5. Integrar únicamente cuando CI termine correctamente.
+6. Utilizar Squash Merge para conservar un commit claro por Pull Request.
+7. Eliminar la rama de feature después del merge.
+
+El workflow se ejecuta en cada push a `main` y `feature/**`, y en cada Pull Request dirigido a `main`. La protección de `main` exige Pull Request y el check `build-and-test`, bloquea force pushes y restringe la eliminación de la rama.
+
+## Versionamiento y tagging
+
+Las versiones publicables siguen Semantic Versioning y usan tags con el formato `vMAJOR.MINOR.PATCH`:
+
+- `MAJOR`: cambio incompatible con versiones anteriores.
+- `MINOR`: nueva funcionalidad compatible.
+- `PATCH`: corrección compatible.
+
+Un tag se crea únicamente sobre un commit integrado en `main` cuyo CI haya finalizado correctamente. Ejemplo para publicar la primera versión:
+
+```bash
+git switch main
+git pull --ff-only
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
+```
+
+La trazabilidad esperada es directa:
+
+```text
+tag v1.0.0
+    -> versión Gradle 1.0.0
+    -> m4-proy-final-1.0.0.jar
+    -> GitHub Release v1.0.0
+```
+
+Los cambios de cada versión se documentan en `CHANGELOG.md`.
+
+## Pipeline de CI y publicación
+
+El workflow `.github/workflows/pipeline.yml` ejecuta:
+
+```text
+Checkout
+  -> Setup JDK 17
+  -> Validación del tag
+  -> Build
+  -> Pruebas JUnit
+  -> Verificación y reporte JaCoCo
+  -> JAR ejecutable
+  -> Artefactos de GitHub Actions
+  -> GitHub Release, solamente cuando el evento es un tag válido
+```
+
+Para ramas y Pull Requests, la versión del artefacto incluye el SHA corto del commit, por ejemplo `0.0.1-SNAPSHOT-a1b2c3d`. Para un tag `v1.2.0`, el JAR y su manifiesto reciben la versión exacta `1.2.0`.
+
+El job `ci` construye el JAR una sola vez. El job `release` descarga ese mismo artefacto y lo adjunta a la Release; no vuelve a construir la aplicación. El permiso de escritura sobre el repositorio existe únicamente en el job de Release.
+
+Los reportes de pruebas y cobertura se publican incluso cuando una validación falla, siempre que hayan podido generarse. Esto permite diagnosticar el error desde la ejecución de GitHub Actions.
+
+## Code Coverage
+
+JaCoCo genera reportes HTML y XML con cobertura de clases, métodos, líneas, ramas, instrucciones y complejidad. La cobertura permite localizar código sin pruebas y evita integrar cambios que reduzcan la cobertura de líneas por debajo del 70% definido en `build.gradle`.
+
+Para aumentar la cobertura se deben agregar pruebas que recorran tanto el resultado exitoso como las validaciones y excepciones de cada método.
+
+## Comportamiento ante fallos
+
+Cuando una prueba o la verificación de cobertura falla:
+
+1. Gradle devuelve un código de salida distinto de cero.
+2. El job `build-and-test` queda en estado fallido.
+3. La protección de `main` impide integrar el Pull Request.
+4. No se publica el JAR ni se crea una Release.
+5. Los reportes disponibles se conservan como artefactos de diagnóstico.
+
+## Evidencias en GitHub
+
+- [Ejecuciones de GitHub Actions](https://github.com/Koderom/M4-Proy-Final/actions)
+- [Pull Requests](https://github.com/Koderom/M4-Proy-Final/pulls?q=is%3Apr)
+- [Reglas de protección de main](https://github.com/Koderom/M4-Proy-Final/rules?ref=refs%2Fheads%2Fmain)
+- [Ejecución fallida de demostración](https://github.com/Koderom/M4-Proy-Final/actions/runs/31964252882)
+- [Tags](https://github.com/Koderom/M4-Proy-Final/tags)
+- [Releases](https://github.com/Koderom/M4-Proy-Final/releases)
+
+## Convención de commits
+
+```text
 <tipo>: <descripción breve>
-
-<descripción detallada opcional>
 ```
 
-**Tipos**:
-- `feat`: Nueva funcionalidad
-- `fix`: Corrección de bug
-- `docs`: Cambios en documentación
-- `test`: Adición o modificación de tests
-- `chore`: Cambios en configuración o dependencias
+Tipos recomendados: `feat`, `fix`, `docs`, `test`, `ci`, `refactor` y `chore`.
 
 Ejemplo:
+
+```text
+ci: publish versioned JAR from semantic tags
 ```
-feat: Add GitHub Actions workflow for CI/CD
-```
-
-## 🔐 Protecciones de Rama
-
-La rama `main` está protegida y requiere:
-
-- ✅ Pull Request review
-- ✅ Pasar todos los checks de CI/CD
-- ✅ Historia de commits limpia
-
-## 📚 Referencias Útiles
-
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [GitHub Actions Syntax](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
-- [GitHub Actions Best Practices](https://docs.github.com/en/actions/guides)
-- [CI/CD Concepts](https://www.atlassian.com/continuous-delivery/ci-cd)
-
-**Última actualización**: 2026-08-16

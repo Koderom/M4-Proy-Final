@@ -1,4 +1,4 @@
-package com.example.ci_cd_labs.controllers;
+package com.example.m4_proy_final.controllers;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ class GreetingControllerTest {
 	void helloReturnsGreeting() throws Exception {
 		mockMvc.perform(get("/api/hello"))
 			.andExpect(status().isOk())
-			.andExpect(content().string("Hola desde CI/CD Labs"));
+			.andExpect(content().string("Hola desde M4 Proy Final"));
 	}
 
 }

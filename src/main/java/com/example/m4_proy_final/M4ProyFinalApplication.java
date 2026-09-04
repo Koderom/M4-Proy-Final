@@ -1,4 +1,4 @@
-package com.example.ci_cd_labs;
+package com.example.m4_proy_final;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,17 +6,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
-public class CiCdLabsApplication {
+public class M4ProyFinalApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CiCdLabsApplication.class, args);
+		SpringApplication.run(M4ProyFinalApplication.class, args);
 	}
 
 	@RestController
 	class HelloController {
 		@GetMapping("/")
 		public String hello() {
-			return "Hello CI/CD World!";
+			return "M4 Proy Final is running!";
 		}
 	}
 
