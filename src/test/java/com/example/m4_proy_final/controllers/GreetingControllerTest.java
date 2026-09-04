@@ -38,4 +38,11 @@ class GreetingControllerTest {
 			.andExpect(content().string("m4-proy-final v1.1.0"));
 	}
 
+	@Test
+	void retunRandomWord() throws Exception {
+		mockMvc.perform(get("/api/random-animal"))
+				.andExpect(status().isOk())
+				.andExpect(content().string("cat"));
+	}
+
 }

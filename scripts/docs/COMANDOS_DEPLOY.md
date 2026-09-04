@@ -137,15 +137,19 @@ La nueva versión siempre se instala en el ambiente **opuesto** y, solo si pasa 
 
 ## 6. Rollback (si algo falla)
 
-**Automático:** si el health check, E2E o la verificación de tráfico fallan, `deploy.sh` revierte solo:
+**Automático:** si el health check, E2E, switch o la verificación de tráfico fallan, `deploy.sh` revierte solo:
 
 ```bash
 ROLLBACK
 Ambiente anterior : green
 Restaurando tráfico hacia green... ✅
+JAR anterior restaurado: m4-proy-final-blue-<TIMESTAMP>.jar
 Deteniendo blue... ✅
+Rollback completado.
 Ambiente activo: green
 ```
+
+El rollback: restaura el include de Nginx hacia el ambiente anterior, repone el JAR previo en el slot fallido desde `versions/`, detiene la instancia defectuosa (SIGTERM y `kill -9` de respaldo) y verifica el tráfico post-rollback.
 
 **Manual:** la versión anterior queda respaldada en `versions/`:
 

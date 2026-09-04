@@ -286,17 +286,14 @@ detectar_ambiente_activo() {
 # la nueva versión.
 # ===============================================================
 
-detener_target() {
+detener_pids() {
 
-    log "Deteniendo instancia anterior de $TARGET..."
+    local pids="$1"
+    local label="$2"
 
-    local pids
-
-    pids=$(pgrep -f "$TARGET_JAR" || true)
+    local running=false
 
     if [[ -z "$pids" ]]; then
-
-        ok "No existe una instancia anterior de $TARGET."
 
         return 0
     fi
@@ -311,7 +308,7 @@ detener_target() {
 
     for i in $(seq 1 "$STOP_TIMEOUT"); do
 
-        local running=false
+        running=false
 
         for pid in $pids; do
 
@@ -323,7 +320,7 @@ detener_target() {
 
         if [[ "$running" == false ]]; then
 
-            ok "$TARGET detenido."
+            ok "$label detenido."
 
             return 0
         fi
@@ -340,7 +337,25 @@ detener_target() {
 
     done
 
-    ok "$TARGET detenido forzosamente."
+    ok "$label detenido forzosamente."
+}
+
+detener_target() {
+
+    log "Deteniendo instancia anterior de $TARGET..."
+
+    local pids
+
+    pids=$(pgrep -f "$TARGET_JAR" || true)
+
+    if [[ -z "$pids" ]]; then
+
+        ok "No existe una instancia anterior de $TARGET."
+
+        return 0
+    fi
+
+    detener_pids "$pids" "$TARGET"
 }
 
 # ===============================================================
@@ -536,6 +551,11 @@ switch_traffic() {
     log "Nginx VM : $NGINX_HOST"
     log "Destino  : $APP_HOST:$TARGET_PORT"
 
+    # Se registra que NGINX va a ser tocado (o intentado tocar).
+    # Así el rollback SIEMPRE reconcilia el include hacia ACTIVE,
+    # incluso si `nginx -t` o el reload fallan después del tee.
+    NGINX_TOUCHED=true
+
     local remote_command
 
     remote_command="
@@ -654,11 +674,13 @@ rollback() {
     log "Ambiente anterior : $ACTIVE"
     log "Ambiente fallido  : $TARGET"
 
+    local rollback_ok=true
+
     # -----------------------------------------------------------
-    # Si Nginx ya fue cambiado, devolverlo al ambiente anterior
+    # 1) Si Nginx fue tocado, devolverlo al ambiente anterior
     # -----------------------------------------------------------
 
-    if [[ "${TRAFFIC_SWITCHED:-false}" == true ]]; then
+    if [[ "${NGINX_TOUCHED:-false}" == true ]]; then
 
         log "Restaurando tráfico hacia $ACTIVE..."
 
@@ -693,11 +715,42 @@ rollback() {
 
             fail "ERROR CRÍTICO: no se pudo restaurar Nginx."
 
+            rollback_ok=false
+
         fi
     fi
 
     # -----------------------------------------------------------
-    # Detener instancia defectuosa
+    # 2) Restaurar el JAR anterior (último backup) en el slot TARGET
+    # -----------------------------------------------------------
+
+    local backup
+
+    backup=$(ls -1 "$APP_DIR/versions/${APP_NAME}-${TARGET}-"*.jar 2>/dev/null | tail -n 1 || true)
+
+    if [[ -n "$backup" ]]; then
+
+        if cp "$backup" "$APP_DIR/$TARGET_JAR"; then
+
+            chmod 755 "$APP_DIR/$TARGET_JAR"
+
+            ok "JAR anterior restaurado:"
+            ok "$(basename "$backup")"
+
+        else
+
+            fail "No se pudo restaurar el JAR anterior."
+
+            rollback_ok=false
+        fi
+
+    else
+
+        warn "No se encontró backup de $TARGET para restaurar."
+    fi
+
+    # -----------------------------------------------------------
+    # 3) Detener la instancia defectuosa
     # -----------------------------------------------------------
 
     if [[ -n "${TARGET_PID:-}" ]]; then
@@ -706,16 +759,72 @@ rollback() {
 
             log "Deteniendo $TARGET..."
 
-            kill "$TARGET_PID" 2>/dev/null || true
-
-            sleep 2
-
+            detener_pids "$TARGET_PID" "$TARGET"
         fi
     fi
 
-    ok "Rollback completado."
+    rm -f "$APP_DIR/${TARGET}.pid"
 
-    log "Ambiente activo: $ACTIVE"
+    # -----------------------------------------------------------
+    # 4) Verificar que el tráfico vuelve al ambiente anterior
+    # -----------------------------------------------------------
+
+    if [[ "${NGINX_TOUCHED:-false}" == true ]]; then
+
+        log "Verificando tráfico post-rollback..."
+
+        local expected_instance
+        expected_instance="$(echo "$ACTIVE" | tr 'a-z' 'A-Z')"
+
+        sleep 3
+
+        local ok_count=0
+        local response
+
+        for i in $(seq 1 5); do
+
+            response=$(curl -sf "http://$NGINX_HOST$INSTANCE_PATH" 2>/dev/null || true)
+
+            if [[ "$response" == *"$expected_instance"* ]]; then
+                ok_count=$((ok_count + 1))
+            fi
+
+        done
+
+        if [[ "$ok_count" -ge 4 ]]; then
+
+            ok "Tráfico verificado hacia $ACTIVE ($ok_count/5)."
+
+        else
+
+            warn "El tráfico NO volvió completamente a $ACTIVE ($ok_count/5)."
+
+            rollback_ok=false
+        fi
+    fi
+
+    if [[ "$rollback_ok" == true ]]; then
+
+        ok "Rollback completado."
+
+        return 0
+    fi
+
+    fail "Rollback incompleto. Revise manualmente el estado de las VMs."
+
+    return 1
+}
+
+ejecutar_rollback() {
+
+    if rollback; then
+        :
+    else
+
+        fail "Rollback incompleto. Revise manualmente el estado de las VMs."
+    fi
+
+    exit 1
 }
 
 # ===============================================================
@@ -762,6 +871,7 @@ reportar_resultado() {
 main() {
 
     TRAFFIC_SWITCHED=false
+    NGINX_TOUCHED=false
 
     echo ""
     echo "=============================================="
@@ -795,9 +905,7 @@ main() {
 
     if ! health_check; then
 
-        rollback
-
-        exit 1
+        ejecutar_rollback
     fi
 
     # -----------------------------------------------------------
@@ -806,9 +914,7 @@ main() {
 
     if ! run_e2e_tests; then
 
-        rollback
-
-        exit 1
+        ejecutar_rollback
     fi
 
     # -----------------------------------------------------------
@@ -817,9 +923,7 @@ main() {
 
     if ! switch_traffic; then
 
-        rollback
-
-        exit 1
+        ejecutar_rollback
     fi
 
     # -----------------------------------------------------------
@@ -830,9 +934,7 @@ main() {
 
         warn "La verificación de tráfico falló."
 
-        rollback
-
-        exit 1
+        ejecutar_rollback
     fi
 
     # -----------------------------------------------------------

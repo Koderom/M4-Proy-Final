@@ -30,4 +30,9 @@ public class GreetingController {
 	public String version() {
 		return "m4-proy-final v1.1.0";
 	}
+
+	@GetMapping("/random-animal")
+	public String randomWord() {
+		return "cat";
+	}
 }

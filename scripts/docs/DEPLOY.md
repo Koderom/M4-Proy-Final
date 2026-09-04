@@ -267,7 +267,12 @@ for i in {1..20}; do curl -s http://<VM_NGINX>/api/instance; echo; done
 
 Con Blue-Green, el ambiente **no activo** siempre conserva la versión anterior, por lo que el rollback es inmediato:
 
-**Rollback automático** (durante deploy): si el health check o las E2E fallan, el script detiene la instancia nueva y **mantiene el tráfico en el ambiente anterior** (no conmuta Nginx).
+**Rollback automático** (durante deploy): si el health check, las E2E, el switch o la verificación de tráfico fallan, el script ejecuta automáticamente:
+
+1. Restaura el tráfico de Nginx hacia el ambiente anterior (si llegó a tocarse).
+2. Restaura en el slot TARGET el JAR anterior desde el último backup en `versions/`.
+3. Detiene la instancia defectuosa (con SIGTERM y `kill -9` de respaldo) y limpia su archivo `*.pid`.
+4. Verifica que el tráfico vuelve a responder desde el ambiente anterior.
 
 **Rollback manual** (versión con problemas ya activa): vuelve a desplegar la versión anterior, que quedará guardada como backup en `versions/`:
 
