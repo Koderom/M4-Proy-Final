@@ -4,6 +4,14 @@
 
 Este proyecto es un laboratorio de pruebas y conceptos fundamentales de **CI/CD (Continuous Integration/Continuous Delivery)** y **GitHub Actions**. Está diseñado para explorar y practicar los siguientes conceptos clave:
 
+## 🌐 La Aplicación
+
+Una API REST sencilla con **Spring Boot 4.1.0** y **Java 17** que expone un endpoint de ejemplo (hello world):
+
+| Método | Ruta        | Respuesta                  |
+|--------|-------------|----------------------------|
+| GET    | `/api/hello`| `Hola desde CI/CD Labs`    |
+
 ## 🎯 Objetivos
 
 - Entender y configurar pipelines de CI/CD
@@ -28,10 +36,16 @@ Este proyecto es un laboratorio de pruebas y conceptos fundamentales de **CI/CD 
 ci-cd-labs/
 ├── .github/
 │   └── workflows/          # GitHub Actions workflow files
-├── app/                    # Código de la aplicación
-├── tests/                  # Tests automatizados
-├── README.md               # Este archivo
-└── hello.txt               # Archivo de ejemplo
+├── src/
+│   ├── main/               # Código de la aplicación
+│   │   └── java/com/example/ci_cd_labs/
+│   │       ├── CiCdLabsApplication.java
+│   │       └── controllers/GreetingController.java
+│   └── test/               # Tests automatizados
+│       └── java/com/example/ci_cd_labs/
+├── build.gradle
+├── settings.gradle
+└── README.md               # Este archivo
 ```
 
 ## 🚀 Primeros Pasos
@@ -62,13 +76,32 @@ ci-cd-labs/
    - Los workflows se ejecutarán automáticamente
    - Revisa que pasen todas las validaciones
 
+## 🛠️ Build y Tests
+
+Usa el wrapper de Gradle incluido. En Windows el comando es `.\gradlew.bat` (en Linux/macOS, `./gradlew`).
+
+| Comando                         | Descripción                                                  |
+|---------------------------------|--------------------------------------------------------------|
+| `.\gradlew.bat test`            | Compila y ejecuta todas las pruebas (JUnit 5)                |
+| `.\gradlew.bat build`           | Compila, ejecuta pruebas y genera el jar (incluye `test`)    |
+| `.\gradlew.bat build -x test`   | Solo compila, sin ejecutar pruebas                           |
+| `.\gradlew.bat test --tests com.example.ci_cd_labs.controllers.GreetingControllerTest` | Ejecuta una sola prueba |
+
+Para correr la aplicación:
+
+```
+.\gradlew.bat bootRun
+```
+
+Y abrir <http://localhost:8080/api/hello>.
+
+> **Nota (entorno local):** el puerto 8080 suele estar ocupado por XAMPP/Apache en esta máquina. Si ocurre, usa `.\gradlew.bat bootRun --args='--server.port=8090'` o detén Apache.
+
 ## 🔄 GitHub Actions Workflows
 
 ### Workflows Disponibles
 
-- **on-push.yml**: Se ejecuta en cada push a cualquier rama
-- **on-pull-request.yml**: Se ejecuta cuando se abre o actualiza un PR
-- **on-schedule.yml**: Se ejecuta en horarios programados
+- **pipeline.yml**: Se ejecuta en cada push a `main`/`feature/*` y en PRs hacia `main`. Por ahora solo muestra pasos de ejemplo (echo); no compila ni ejecuta pruebas.
 
 ## ✅ Validaciones Automáticas
 
@@ -115,11 +148,5 @@ La rama `main` está protegida y requiere:
 - [GitHub Actions Syntax](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
 - [GitHub Actions Best Practices](https://docs.github.com/en/actions/guides)
 - [CI/CD Concepts](https://www.atlassian.com/continuous-delivery/ci-cd)
-
-## 📧 Contacto
-
-Para preguntas o sugerencias sobre este laboratorio, contacta al instructor del Diplomado.
-
----
 
 **Última actualización**: 2026-08-16
