@@ -35,4 +35,14 @@ public class M4ProyFinalApplication {
 			return "Current Server Date: " + java.time.LocalDate.now();
 		}
 	}
+
+	@RestController
+	class SumaController {
+		@GetMapping("/suma")
+		public String suma() {
+			int a = 1;
+			int b = 4;
+			return "Suma: " + (a + b);
+		}
+	}
 }
