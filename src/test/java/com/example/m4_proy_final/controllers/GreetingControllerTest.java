@@ -24,4 +24,25 @@ class GreetingControllerTest {
 			.andExpect(content().string("Hola desde M4 Proy Final"));
 	}
 
+	@Test
+	void instanceReturnsGreenOnDefaultPort() throws Exception {
+		mockMvc.perform(get("/api/instance"))
+			.andExpect(status().isOk())
+			.andExpect(content().json("{\"instance\":\"unknown\",\"port\":\"8081\"}"));
+	}
+
+	@Test
+	void versionReturnsAppVersion() throws Exception {
+		mockMvc.perform(get("/api/version"))
+			.andExpect(status().isOk())
+			.andExpect(content().string("m4-proy-final v1.1.0"));
+	}
+
+	@Test
+	void retunRandomWord() throws Exception {
+		mockMvc.perform(get("/api/random-animal"))
+				.andExpect(status().isOk())
+				.andExpect(content().string("cat"));
+	}
+
 }
